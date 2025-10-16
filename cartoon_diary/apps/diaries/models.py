@@ -1,26 +1,35 @@
-"""Diary models."""
+"""Diary models mapped to db_user.sqlite3 diary_table."""
 
-from django.conf import settings
 from django.db import models
-
 from apps.core.models import TimeStampedModel
+from apps.accounts.models import User  # our custom user model linked to user_table
 
 
-class DiaryEntry(TimeStampedModel):
+class Diary(TimeStampedModel):
+    """Model reflecting the exact structure of diary_table."""
+
+    seq_id = models.AutoField(primary_key=True, db_column="seq_id")  # INTEGER PK AUTOINCREMENT
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
-        related_name="diary_entries",
+        related_name="diaries",
+        db_column="user_id",
     )
-    date = models.DateField()
-    title = models.CharField(max_length=120, blank=True)
-    content = models.TextField()
-    mood = models.CharField(max_length=32, blank=True)
-    tags = models.JSONField(default=list, blank=True)
+    content = models.TextField(null=False, db_column="content")
+    diary_date = models.DateField(null=False, db_column="diary_date")
+    image_url = models.CharField(
+        max_length=255, blank=True, null=True, db_column="image_url"
+    )
+    is_deleted = models.CharField(
+        max_length=1,
+        choices=[("Y", "Yes"), ("N", "No")],
+        default="N",
+        db_column="is_deleted",
+    )
 
     class Meta:
-        unique_together = ("user", "date")
-        ordering = ("-date", "-created_at")
+        db_table = "diary_table"
+        ordering = ("-diary_date",)
 
-    def __str__(self) -> str:  # pragma: no cover - human readable
-        return f"{self.user.email} @ {self.date}"
+    def __str__(self):
+        return f"Diary {self.seq_id} ({self.diary_date}) by {self.user.email_id}"

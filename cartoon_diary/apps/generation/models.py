@@ -1,65 +1,57 @@
-"""Models for the cartoon generation pipeline."""
+"""Models for user_table and diary_table based on db_user.sqlite3."""
 
 from django.db import models
-
 from apps.core.models import TimeStampedModel
-from apps.diaries.models import DiaryEntry
 
 
-class Prompt(TimeStampedModel):
-    diary_entry = models.ForeignKey(
-        DiaryEntry,
-        on_delete=models.CASCADE,
-        related_name="prompts",
+class User(TimeStampedModel):
+    """User information mapped exactly from user_table."""
+
+    seq_id = models.AutoField(primary_key=True, db_column="seq_id")
+    email_id = models.EmailField(max_length=255, unique=True, db_column="email_id")
+    password_hash = models.CharField(max_length=255, db_column="password_hash")
+    username = models.CharField(max_length=100, blank=True, null=True, db_column="username")
+    nickname = models.CharField(max_length=100, blank=True, null=True, db_column="nickname")
+    created_at = models.DateTimeField(
+        auto_now_add=True, db_column="created_at"
+    )  # TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    last_login_at = models.DateTimeField(
+        blank=True, null=True, db_column="last_login_at"
     )
-    body = models.JSONField(default=dict)
-    model = models.CharField(max_length=100)
-    params = models.JSONField(default=dict, blank=True)
-
-    def __str__(self) -> str:  # pragma: no cover - human readable
-        return f"Prompt for diary {self.diary_entry_id}"
-
-
-class Cartoon(TimeStampedModel):
-    class Status(models.TextChoices):
-        QUEUED = "queued", "Queued"
-        RUNNING = "running", "Running"
-        SUCCEEDED = "succeeded", "Succeeded"
-        FAILED = "failed", "Failed"
-
-    diary_entry = models.ForeignKey(
-        DiaryEntry,
-        on_delete=models.CASCADE,
-        related_name="cartoons",
-    )
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.QUEUED)
-    seed = models.CharField(max_length=64, blank=True)
-    guidance_scale = models.FloatField(null=True, blank=True)
-    grid_image = models.ImageField(upload_to="cartoons/grids/", blank=True, null=True)
-    fail_reason = models.TextField(blank=True)
-    version = models.PositiveIntegerField(default=1)
-    completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
+        db_table = "user_table"
         ordering = ("-created_at",)
 
-    def __str__(self) -> str:  # pragma: no cover - human readable
-        return f"Cartoon {self.pk} ({self.status})"
+    def __str__(self):
+        return self.nickname or self.username or self.email_id
 
 
-class CartoonPanel(TimeStampedModel):
-    cartoon = models.ForeignKey(
-        Cartoon,
+class DiaryEntry(TimeStampedModel):
+    """Diary entries mapped exactly from diary_table."""
+
+    seq_id = models.AutoField(primary_key=True, db_column="seq_id")
+    user = models.ForeignKey(
+        User,
         on_delete=models.CASCADE,
-        related_name="panels",
+        db_column="user_id",
+        related_name="diary_entries",
     )
-    index = models.PositiveSmallIntegerField()
-    image = models.ImageField(upload_to="cartoons/panels/", blank=True, null=True)
-    caption = models.CharField(max_length=200, blank=True)
+    content = models.TextField(null=False, db_column="content")
+    diary_date = models.DateField(null=False, db_column="diary_date")
+    image_url = models.CharField(
+        max_length=255, blank=True, null=True, db_column="image_url"
+    )
+    is_deleted = models.CharField(
+        max_length=1,
+        default="N",
+        db_column="is_deleted",
+        choices=[("Y", "Yes"), ("N", "No")],
+    )
 
     class Meta:
-        unique_together = ("cartoon", "index")
-        ordering = ("index",)
+        db_table = "diary_table"
+        ordering = ("-diary_date",)
 
-    def __str__(self) -> str:  # pragma: no cover - human readable
-        return f"Panel {self.index} of cartoon {self.cartoon_id}"
+    def __str__(self):
+        return f"Diary {self.seq_id} by user {self.user_id} on {self.diary_date}"

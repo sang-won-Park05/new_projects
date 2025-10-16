@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% load static %}
 <!-- DASHBOARD VERSION: 2025-10-16-2 -->
 <!DOCTYPE html>
@@ -94,3 +95,71 @@
   </main>
 </body>
 </html>
+=======
+{% extends "base.html" %}
+{% block title %}대시보드 | 키워드 만화 일기{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header fw-bold">오늘의 일기 작성</div>
+      <div class="card-body">
+        <form method="post" action="/dashboard/">
+          {% csrf_token %}
+          <div class="row g-3 mb-2">
+            <div class="col-auto">
+              <label class="form-label">날짜</label>
+              <input type="date" class="form-control" name="date" value="{{ today|date:'Y-m-d' }}">
+            </div>
+            <div class="col">
+              <label class="form-label">제목(선택)</label>
+              <input type="text" class="form-control" name="title" value="{{ today_entry.title }}" placeholder="예: 오늘은 이런 하루">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">내용</label>
+            <textarea class="form-control" name="content" rows="10" placeholder="오늘 하루를 자유롭게 적어보세요.">{{ today_entry.content }}</textarea>
+          </div>
+          <div class="text-end">
+            <button class="btn btn-primary" type="submit">저장하고 만화 생성</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header fw-bold">오늘의 4컷 미리보기</div>
+      <div class="card-body">
+        {% if latest_cartoon %}
+          <p class="text-muted">상태: <span class="badge bg-secondary">{{ latest_cartoon.status }}</span></p>
+          {% if latest_cartoon.grid_image %}
+            <img src="{{ latest_cartoon.grid_image.url }}" class="img-fluid border rounded" alt="4컷 미리보기">
+          {% else %}
+            <div class="row g-3">
+              {% for panel in latest_cartoon.panels.all %}
+                <div class="col-6">
+                  <div class="border rounded p-2 h-100 d-flex flex-column">
+                    {% if panel.image %}
+                      <img src="{{ panel.image.url }}" class="img-fluid mb-2" alt="panel {{ panel.index }}">
+                    {% else %}
+                      <div class="text-center text-muted py-5">이미지 생성중...</div>
+                    {% endif %}
+                    <div class="small text-muted">{{ panel.caption }}</div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% else %}
+          <div class="text-center text-muted py-5">아직 생성된 만화가 없어요. 일기를 저장하면 자동으로 생성합니다.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+>>>>>>> 7540b026f62d290c5a7ea2894ef8c3158b029f4f
