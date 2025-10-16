@@ -1,0 +1,97 @@
+{% load static %}
+<!-- DASHBOARD VERSION: 2025-10-16-2 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ë©”ì¸ ?€?œë³´??/title>
+  <link href="{% static 'bootstrap.min.css' %}" rel="stylesheet" />
+  <link href="{% static 'style.css' %}" rel="stylesheet" />
+  <style>
+    .app-shell { min-height: 100vh; background:#f1f5f9; }
+    .app-header { background:#ffffff; border-bottom:1px solid #e5e7eb; position:sticky; top:0; z-index:10; }
+    .header-wrap { position:relative; }
+    .header-title { font-weight:800; letter-spacing:.2px; text-align:center; }
+    .header-right { position:absolute; right:0; top:50%; transform:translateY(-50%); }
+    .layout { display:grid; grid-template-columns: 1fr 1.1fr 320px; gap:28px; padding: 24px; }
+    .panel { background:#fff; border:1px solid #94a3b8; border-radius:8px; padding:20px; }
+    .panel-title { font-weight:700; font-size:1.25rem; margin-bottom:14px; }
+    .panel-outline { border-color:#334155; }
+    .box-outline { border:2px solid #334155; border-radius:4px; }
+    .btn-outline { border:1px solid #334155; background:#fff; border-radius:6px; padding:8px 16px; }
+    .btn-oval { border-radius:999px; }
+    .sidebar { background:#dbeafe; border:1px solid #94a3b8; border-radius:4px; padding:20px; display:flex; flex-direction:column; gap:18px; }
+    .profile-photo { width:86px; height:86px; border-radius:50%; background:#fff; border:1px solid #94a3b8; display:flex; align-items:center; justify-content:center; align-self:center; }
+    .preview-box { border:2px solid #334155; border-radius:4px; height:380px; display:flex; align-items:center; justify-content:center; color:#475569; font-weight:700; }
+    .grid-actions { display:flex; gap:18px; justify-content:center; }
+    @media (max-width: 1200px) { .layout { grid-template-columns: 1fr; } .sidebar { order:-1; } }
+  </style>
+</head>
+<body class="app-shell">
+  <header class="app-header">
+    <div class="container py-3 header-wrap">
+      <h1 class="header-title h5 mb-0">?ì–´ ë§Œí™” ?¤ì´?´ë¦¬</h1>
+      <div class="header-right">
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'logout' %}">ë¡œê·¸?„ì›ƒ</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container my-3">
+    <div class="layout">
+      <!-- Left: ?¤ëŠ˜???¼ê¸° -->
+      <section class="panel panel-outline">
+        <div class="panel-title">?¤ëŠ˜???¼ê¸°</div>
+        <form method="post" action="/dashboard/">
+          {% csrf_token %}
+          <div class="mb-2 d-flex align-items-center gap-2" style="gap:14px;">
+            <div class="flex-grow-1">
+              <label class="form-label mb-1">? ì§œ ? íƒ</label>
+              <input type="date" class="form-control box-outline" name="date" value="{{ today|date:'Y-m-d' }}">
+            </div>
+            <div style="margin-top:26px; color:#334155">(ìº˜ë¦°??</div>
+          </div>
+          <div class="mb-2">
+            <div class="box-outline" style="height:320px; padding:12px;">
+              <textarea class="form-control" name="content" rows="10" placeholder="?¼ê¸° ?…ë ¥" style="height:100%; border:none; box-shadow:none;">{{ today_entry.content }}</textarea>
+            </div>
+          </div>
+          <div class="d-flex gap-2 mb-3" style="gap:12px;">
+            <button class="btn btn-outline" type="button">?Œë§ˆ1</button>
+            <button class="btn btn-outline" type="button">?Œë§ˆ2</button>
+            <button class="btn btn-outline" type="button">?Œë§ˆ3</button>
+          </div>
+          <div class="text-end">
+            <button class="btn btn-outline" type="submit">?€??ì¹´íˆ° ?œì‘</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Center: ?¤ëŠ˜???¤ì»· ë¯¸ë¦¬ë³´ê¸° -->
+      <section class="panel panel-outline">
+        <div class="panel-title">?¤ëŠ˜???¤ì»· ë¯¸ë¦¬ë³´ê¸°</div>
+        <div class="preview-box">?¤ì»·</div>
+        <div class="grid-actions mt-4">
+          <button class="btn btn-outline" type="button">?¬ìƒ??/button>
+          <button class="btn btn-outline" type="button">?¸ì§‘</button>
+          <button class="btn btn-outline" type="button">?€??/button>
+        </div>
+      </section>
+
+      <!-- Right: ?¬ì´?œë°” -->
+      <aside class="sidebar">
+        <div class="d-flex justify-content-end"><strong>X</strong></div>
+        <div class="profile-photo">?„ë¡œ???¬ì§„</div>
+        <div class="text-center">{{ request.user.username|default:"00" }}??/div>
+        <div>???•ë³´</div>
+        <div>?˜ê²½?¤ì •</div>
+        <div>{{ today|date:"Y??m?? }}</div>
+        <div class="box-outline p-4 text-center">ìº˜ë¦°?”ì— ì²´í¬</div>
+        <div class="mt-auto text-center"><a class="btn btn-sm btn-outline-secondary" href="{% url 'logout' %}">ë¡œê·¸?„ì›ƒ</a></div>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>
+

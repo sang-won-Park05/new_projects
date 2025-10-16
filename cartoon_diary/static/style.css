@@ -1,0 +1,135 @@
+body {
+    background: #f8fafc;
+    font-family: 'Noto Sans KR', Arial, sans-serif;
+    font-size: 1.1rem;
+}
+.container {
+    max-width: 900px;
+}
+.card {
+    border-radius: 1.2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    transition: box-shadow 0.2s;
+}
+.card:hover, .question-card:hover {
+    box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+    border: 1px solid #38f9d7;
+}
+.btn-gradient {
+    background: linear-gradient(90deg,#43e97b 0%,#38f9d7 100%);
+    color: #fff;
+    border: none;
+}
+.btn-gradient:hover {
+    background: linear-gradient(90deg,#38f9d7 0%,#43e97b 100%);
+    color: #fff;
+}
+.rounded-pill {
+    border-radius: 50rem !important;
+}
+.form-control-lg {
+    font-size: 1.3rem;
+    background: #f8fafc;
+}
+.form-control:focus {
+    box-shadow: none;
+    border-color: #38f9d7;
+}
+.bg-gradient {
+    background: linear-gradient(90deg,#43e97b 0%,#38f9d7 100%) !important;
+    color: #fff !important;
+}
+.pagination .page-link {
+    border-radius: 0.7rem !important;
+    margin: 0 2px;
+}
+.blog-content {
+    line-height: 2;
+    font-size: 1.2rem;
+    color: #222;
+    word-break: break-word;
+}
+.blog-content pre, .balloon-body pre {
+    background: #282a36;
+    color: #f8f8f2;
+    border-radius: 0.7rem;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+.blog-content code, .balloon-body code {
+    background: #f5f5f5;
+    color: #d63384;
+    padding: 0.2em 0.4em;
+    border-radius: 0.3em;
+    font-size: 1em;
+}
+.blog-content pre code, .balloon-body pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    border-radius: 0;
+}
+.balloon-answer {
+    display: flex;
+    align-items: flex-start;
+}
+.balloon-body {
+    background: #f1f3f5;
+    border-radius: 1.2rem;
+    padding: 1.2rem 1.5rem;
+    position: relative;
+    margin-left: 0.5rem;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.balloon-body:before {
+    content: "";
+    position: absolute;
+    left: -18px;
+    top: 24px;
+    width: 0;
+    height: 0;
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    border-right: 18px solid #f1f3f5;
+}
+.answers-list {
+    margin-bottom: 2rem;
+}
+@media (max-width: 767px) {
+    .question-card {
+        margin-bottom: 1.5rem;
+    }
+}
+@media (min-width: 768px) {
+    .question-card {
+        min-height: 220px;
+    }
+}
+.card.question-card {
+    border-radius: 1.2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    transition: box-shadow 0.2s;
+    margin-bottom: 1.5rem;
+}
+.card.question-card:hover {
+    box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+    border: 1px solid #38f9d7;
+}
+
+/* --- App (Login & Dashboard) additions --- */
+.panel { background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:16px; }
+.calendar { display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; }
+.cal-dayname { text-align:center; font-weight:700; color:#64748b; font-size:.9rem; }
+.cal-cell { background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; min-height:88px; padding:8px; position:relative; }
+.cal-cell .date { position:absolute; top:6px; left:8px; font-weight:700; font-size:.9rem; color:#334155; }
+.cal-cell .badge-dot { position:absolute; bottom:8px; left:8px; width:10px; height:10px; border-radius:50%; background:#38f9d7; }
+.btn-brand { background: linear-gradient(90deg,#43e97b 0%,#38f9d7 100%); color:#fff; border:none; }
+.btn-brand:hover { filter: brightness(.95); color:#fff; }
+
+/* Dashboard refinements */
+.dashboard-title { font-weight:800; text-align:center; }
+.btn-oval { border-radius:999px !important; }
+.panel-lg { border-radius:20px !important; }

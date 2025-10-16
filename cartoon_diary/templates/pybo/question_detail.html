@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load pybo_filter %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-10">
+    <!-- 메시지 표시 -->
+    {% if messages %}
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6" role="alert">
+        {% for message in messages %}
+        <div>
+            <strong>{{ message.tags }}</strong>
+            <span>{{ message.message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <!-- 질문 -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-8 mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">{{ question.subject }}</h1>
+        <div class="prose dark:prose-invert max-w-none mb-8">{{ question.content|mark }}</div>
+        <div class="flex flex-wrap gap-4 justify-end text-sm text-gray-500 dark:text-gray-400 mb-4">
+            {% if question.modify_date %}
+            <div class="bg-gray-100 dark:bg-gray-700 rounded px-3 py-2">
+                <div class="mb-1 text-xs text-gray-400">수정됨</div>
+                <div>{{ question.modify_date }}</div>
+            </div>
+            {% endif %}
+            <div class="bg-gray-100 dark:bg-gray-700 rounded px-3 py-2">
+                <div class="mb-1 text-xs text-gray-400">{{ question.author.username }}</div>
+                <div>{{ question.create_date }}</div>
+            </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+            <a href="javascript:void(0)" data-uri="{% url 'pybo:question_vote' question.id %}"
+               class="recommend rounded-full px-4 py-2 border border-primary text-primary hover:bg-primary hover:text-white transition">
+                추천 <span class="ml-1 font-bold">{{ question.voter.count }}</span>
+            </a>
+            {% if request.user == question.author %}
+            <a href="{% url 'pybo:question_modify' question.id %}"
+               class="rounded-full px-4 py-2 border border-secondary text-secondary hover:bg-secondary hover:text-white transition">수정</a>
+            <a href="javascript:void(0)" class="delete rounded-full px-4 py-2 border border-red-400 text-red-500 hover:bg-red-500 hover:text-white transition"
+               data-uri="{% url 'pybo:question_delete' question.id %}">삭제</a>
+            {% endif %}
+        </div>
+    </div>
+    <!-- 답변 -->
+    <h5 class="text-lg font-semibold mb-4">{{ question.answer_set.count }}개의 답변이 있습니다.</h5>
+    <div class="space-y-6">
+        {% for answer in question.answer_set.all %}
+        <a id="answer_{{ answer.id }}"></a>
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow flex flex-col">
+            <div class="prose dark:prose-invert max-w-none mb-3">{{ answer.content|mark }}</div>
+            <div class="flex flex-wrap gap-4 justify-end text-xs text-gray-500 dark:text-gray-400 mb-2">
+                {% if answer.modify_date %}
+                <div class="bg-gray-100 dark:bg-gray-800 rounded px-3 py-1">
+                    <span class="text-gray-400">수정됨</span> {{ answer.modify_date }}
+                </div>
+                {% endif %}
+                <div class="bg-gray-100 dark:bg-gray-800 rounded px-3 py-1">
+                    <span class="text-gray-400">{{ answer.author.username }}</span> {{ answer.create_date }}
+                </div>
+            </div>
+            <div class="flex gap-2 mt-2">
+                <a href="javascript:void(0)" data-uri="{% url 'pybo:answer_vote' answer.id %}"
+                   class="recommend rounded-full px-4 py-1 border border-primary text-primary hover:bg-primary hover:text-white transition">
+                    추천 <span class="ml-1 font-bold">{{ answer.voter.count }}</span>
+                </a>
+                {% if request.user == answer.author %}
+                <a href="{% url 'pybo:answer_modify' answer.id %}"
+                   class="rounded-full px-4 py-1 border border-secondary text-secondary hover:bg-secondary hover:text-white transition">수정</a>
+                <a href="javascript:void(0)" class="delete rounded-full px-4 py-1 border border-red-400 text-red-500 hover:bg-red-500 hover:text-white transition"
+                   data-uri="{% url 'pybo:answer_delete' answer.id %}">삭제</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <!-- 답변 작성 -->
+    <form action="{% url 'pybo:answer_create' question.id %}" method="post" class="mt-10 bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+        <div class="mb-3">
+            <label for="content" class="block mb-2 font-semibold">답변내용</label>
+            <textarea {% if not user.is_authenticated %}disabled{% endif %}
+                      name="content" id="content" class="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary transition" rows="8"></textarea>
+        </div>
+        <button type="submit" class="rounded-full px-6 py-2 bg-primary text-white font-semibold hover:bg-blue-600 transition shadow">답변등록</button>
+    </form>
+</div>
+{% endblock %}
+{% block script %}
+<script type='text/javascript'>
+const delete_elements = document.getElementsByClassName("delete");
+Array.from(delete_elements).forEach(function(element) {
+    element.addEventListener('click', function() {
+        if(confirm("정말로 삭제하시겠습니까?")) {
+            location.href = this.dataset.uri;
+        };
+    });
+});
+const recommend_elements = document.getElementsByClassName("recommend");
+Array.from(recommend_elements).forEach(function(element) {
+    element.addEventListener('click', function() {
+        if(confirm("정말로 추천하시겠습니까?")) {
+            location.href = this.dataset.uri;
+        };
+    });
+});
+</script>
+{% endblock %}

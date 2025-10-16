@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="flex justify-between items-center mb-8 flex-wrap gap-4">
+    <a href="{% url 'pybo:question_create' %}" class="rounded-full px-6 py-2 bg-primary text-white font-semibold hover:bg-blue-600 transition shadow">질문 등록하기</a>
+    <div role="tablist" aria-label="정렬" class="inline-flex rounded-full bg-gray-100 dark:bg-gray-800 p-1">
+        <button type="button" onclick="setSort('recent')" role="tab" aria-selected="{% if sort == 'recent' or not sort %}true{% else %}false{% endif %}"
+                class="px-4 py-1.5 rounded-full text-sm font-medium transition {% if sort == 'recent' or not sort %}bg-white dark:bg-gray-900 shadow text-primary{% else %}opacity-80 hover:opacity-100{% endif %}">최신순</button>
+        <button type="button" onclick="setSort('popular')" role="tab" aria-selected="{% if sort == 'popular' %}true{% else %}false{% endif %}"
+                class="px-4 py-1.5 rounded-full text-sm font-medium transition {% if sort == 'popular' %}bg-white dark:bg-gray-900 shadow text-primary{% else %}opacity-80 hover:opacity-100{% endif %}">인기순</button>
+    </div>
+</div>
+
+<div id="question-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+  {% if question_list %}
+    {% for question in question_list %}
+      {% include 'partials/_card_question.html' with question=question %}
+    {% endfor %}
+  {% else %}
+    {% include 'partials/_empty_state.html' %}
+  {% endif %}
+  </div>
+
+<form id="sortForm" method="get" action="{% url 'pybo:index' %}">
+    <input type="hidden" name="sort" id="sortInput" value="{{ sort|default_if_none:'recent' }}">
+    <input type="hidden" name="kw" value="{{ kw|default_if_none:'' }}">
+    <input type="hidden" name="page" value="{{ page }}">
+    <input type="hidden" name="so" value="{{ sort|default_if_none:'recent' }}">
+  </form>
+
+{% include 'partials/_pagination.html' with page_obj=question_list %}
+
+{% endblock %}
+{% block script %}
+<script>
+function setSort(sort) {
+  document.getElementById('sortInput').value = sort;
+  document.getElementById('sortForm').submit();
+}
+function goPage(page) {
+  document.querySelector('input[name="page"]').value = page;
+  document.getElementById('sortForm').submit();
+}
+</script>
+{% endblock %}

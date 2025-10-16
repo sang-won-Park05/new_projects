@@ -1,0 +1,28 @@
+{% comment %} expects page_obj and page_param_name(optional) {% endcomment %}
+{% with p=page_obj %}
+{% if p.paginator.num_pages > 1 %}
+<nav class="flex justify-center mt-10">
+  <ul class="flex flex-wrap gap-2">
+    {% if p.number > 1 %}
+      <li><a href="javascript:void(0)" onclick="goPage(1)" class="px-3 py-1.5 rounded-full border hover:bg-gray-100 dark:hover:bg-gray-800">처음</a></li>
+      <li><a href="javascript:void(0)" onclick="goPage({{ p.previous_page_number }})" class="px-3 py-1.5 rounded-full border hover:bg-gray-100 dark:hover:bg-gray-800">이전</a></li>
+    {% endif %}
+    {% for page_number in p.paginator.page_range %}
+      {% if page_number >= p.number|add:-5 and page_number <= p.number|add:5 %}
+        <li>
+          <a href="javascript:void(0)" onclick="goPage({{ page_number }})"
+             class="px-3 py-1.5 rounded-full border transition {% if page_number == p.number %}bg-primary text-white border-primary{% else %}hover:bg-gray-100 dark:hover:bg-gray-800{% endif %}">
+            {{ page_number }}
+          </a>
+        </li>
+      {% endif %}
+    {% endfor %}
+    {% if p.has_next %}
+      <li><a href="javascript:void(0)" onclick="goPage({{ p.next_page_number }})" class="px-3 py-1.5 rounded-full border hover:bg-gray-100 dark:hover:bg-gray-800">다음</a></li>
+      <li><a href="javascript:void(0)" onclick="goPage({{ p.paginator.num_pages }})" class="px-3 py-1.5 rounded-full border hover:bg-gray-100 dark:hover:bg-gray-800">끝</a></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% endwith %}
+

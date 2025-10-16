@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}ID 찾기 - 영어 만화 다이어리{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7 col-lg-6">
+    <div class="panel p-4">
+      <h2 class="fw-bold mb-2">ID 찾기</h2>
+      <div class="text-muted mb-3">가입 시 사용한 이메일이 곧 아이디입니다.</div>
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label">이름</label>
+          {{ form.name }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label">이메일</label>
+          {{ form.email }}
+        </div>
+        <div class="d-grid mt-3">
+          <button class="btn btn-outline-secondary rounded-pill" type="submit">확인</button>
+        </div>
+        <div class="text-end small mt-3">
+          <a href="{% url 'site_accounts:password_reset' %}">비밀번호 찾기</a>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="col-md-5 col-lg-4">
+    <div class="panel p-4">
+      <div class="fw-bold mb-2">도움말</div>
+      <div class="text-muted small">아이디는 이메일 주소입니다. 이메일을 모를 경우 관리자에게 문의하세요.</div>
+    </div>
+  </div>
+{% endblock %}
+
