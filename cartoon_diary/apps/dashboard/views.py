@@ -7,17 +7,15 @@ from django.utils import timezone
 from django.views.generic import TemplateView
 
 from apps.diaries.models import DiaryEntry
+from apps.generation.selectors import get_latest_cartoon_for_entry
+from apps.generation.pipelines import trigger_cartoon_generation
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
-    # Use a new template name to avoid any stale template caching issues
     template_name = "dashboard/home.html"
 
     def post(self, request, *args, **kwargs):
-        """Handle inline diary submission from dashboard.
-
-        Creates or updates today's diary entry for the current user.
-        """
+        """Save/update today's diary and trigger generation."""
         content = (request.POST.get("content") or "").strip()
         title = (request.POST.get("title") or "").strip()
         date_str = request.POST.get("date")
@@ -29,22 +27,28 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 pass
 
         if not content:
-            messages.warning(request, "내용을 입력해 주세요.")
+            messages.warning(request, "내용을 입력해주세요.")
             return redirect("/dashboard/")
 
         entry, _created = DiaryEntry.objects.get_or_create(user=request.user, date=date)
         entry.title = title
         entry.content = content
         entry.save()
-        messages.success(request, "일기가 저장되었습니다.")
+
+        try:
+            trigger_cartoon_generation(diary_entry_id=entry.id)
+            messages.success(request, "만화 생성 작업을 시작했어요. 잠시 후 결과가 표시됩니다.")
+        except Exception:
+            messages.info(request, "일기를 저장했어요. 생성 작업은 나중에 다시 시도할 수 있어요.")
         return redirect("/dashboard/")
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         today = timezone.localdate()
         ctx["today"] = today
-        # Preload today's entry if exists
-        ctx["today_entry"] = (
-            DiaryEntry.objects.filter(user=self.request.user, date=today).first()
-        )
+        entry = DiaryEntry.objects.filter(user=self.request.user, date=today).first()
+        ctx["today_entry"] = entry
+        if entry:
+            ctx["latest_cartoon"] = get_latest_cartoon_for_entry(diary_entry_id=entry.id)
         return ctx
+

@@ -3,6 +3,7 @@
 from .base import *  # noqa: F401, F403
 
 DEBUG = True
+ALLOWED_HOSTS = ["*"]
 
 # Enable django-extensions only if installed to avoid import errors
 try:  # pragma: no cover - convenience for local dev

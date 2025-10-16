@@ -2,6 +2,7 @@
 """Celery tasks orchestrating the diary → prompt → image pipeline."""
 
 from __future__ import annotations
+
 from django.utils import timezone
 from django.core.files.base import ContentFile
 from celery import chain, shared_task
@@ -11,10 +12,6 @@ from apps.diaries.models import DiaryEntry
 from .models import Cartoon, CartoonPanel, Prompt
 from .services import mark_cartoon_failed
 
-# 새 integrations 모듈 사용
-from integrations.openai_prompt import generate_prompt_from_diary
-from integrations.openai_imagegen import generate_image_url, fetch_bytes, compose_grid
-
 
 @shared_task
 def generate_prompt_task(ctx: dict) -> dict:
@@ -23,22 +20,18 @@ def generate_prompt_task(ctx: dict) -> dict:
       "diary_entry_id": int,
       "cartoon_id": int,
       "prompt_id": None|int,
-      "diary_text_override": None|str,  # ← 프론트에서 온 일기 텍스트 (우선 사용)
+      "diary_text_override": None|str,
     }
     """
     try:
         diary = DiaryEntry.objects.get(pk=ctx["diary_entry_id"])
 
-        # -----------------------------------------------------------
-        # ✨ 프론트엔드 연결 지점
-        # - 프론트에서 일기 텍스트를 보내줄 때 이 키로 넣어주세요.
-        # - 예) pipelines.trigger_cartoon_generation(..., diary_text_override=request.POST["diaryText"])
-        # - 임시로 경로만 표기:
-        #   ("일기장텍스트경로")
-        # -----------------------------------------------------------
         diary_text = (ctx.get("diary_text_override") or diary.content or "").strip()
         if not diary_text:
             raise IntegrationError("Diary text is empty.")
+
+        # Lazy import to avoid raising on server startup if API keys missing
+        from integrations.openai_prompt import generate_prompt_from_diary
 
         prompt_body = generate_prompt_from_diary(diary_text=diary_text)
 
@@ -48,7 +41,7 @@ def generate_prompt_task(ctx: dict) -> dict:
             model=prompt_body.get("model", "gpt-4o-mini"),
         )
 
-        # 진행 상태 갱신
+        # Mark cartoon as running
         Cartoon.objects.filter(pk=ctx["cartoon_id"]).update(status=Cartoon.Status.RUNNING)
 
         ctx["prompt_id"] = prompt.pk
@@ -64,7 +57,7 @@ def generate_prompt_task(ctx: dict) -> dict:
 
 @shared_task
 def generate_panels_task(ctx: dict) -> dict:
-    """프롬프트를 받아 4컷 이미지를 생성하고 저장"""
+    """Use prompt to generate 4 panel images and save them."""
     try:
         prompt = Prompt.objects.get(pk=ctx["prompt_id"])
         cartoon = Cartoon.objects.get(pk=ctx["cartoon_id"])
@@ -72,6 +65,9 @@ def generate_panels_task(ctx: dict) -> dict:
         panels = prompt.body.get("panels") or []
         if len(panels) != 4:
             raise IntegrationError("Prompt must contain 4 panels")
+
+        # Lazy import
+        from integrations.openai_imagegen import generate_image_url, fetch_bytes
 
         for p in panels:
             index = int(p.get("index"))
@@ -100,7 +96,7 @@ def generate_panels_task(ctx: dict) -> dict:
 
 @shared_task
 def compose_grid_task(ctx: dict) -> dict:
-    """생성된 4컷을 2x2 그리드로 합성"""
+    """Compose the 4 panels into a 2x2 grid image."""
     try:
         cartoon = Cartoon.objects.get(pk=ctx["cartoon_id"])
 
@@ -114,7 +110,10 @@ def compose_grid_task(ctx: dict) -> dict:
             finally:
                 panel.image.close()
 
-        grid_bytes = compose_grid(panel_bytes)  # 기본 2x2, 내부에서 512로 리사이즈 가능
+        # Lazy import
+        from integrations.openai_imagegen import compose_grid
+
+        grid_bytes = compose_grid(panel_bytes)
         cartoon.grid_image.save("grid.png", ContentFile(grid_bytes), save=False)
         cartoon.status = Cartoon.Status.SUCCEEDED
         cartoon.completed_at = timezone.now()
@@ -132,9 +131,7 @@ def compose_grid_task(ctx: dict) -> dict:
 @shared_task
 def run_generation_pipeline(diary_entry_id: int, diary_text_override: str | None = None) -> None:
     """
-    파이프라인 시작 태스크
-    - Cartoon 레코드를 생성(QUEUED)
-    - 컨텍스트에 diary_text_override(프론트 전달 텍스트)를 함께 싣고 비동기 체인 실행
+    Pipeline entry: creates a queued Cartoon and runs async chain.
     """
     cartoon = Cartoon.objects.create(
         diary_entry_id=diary_entry_id,
@@ -145,12 +142,6 @@ def run_generation_pipeline(diary_entry_id: int, diary_text_override: str | None
         "diary_entry_id": diary_entry_id,
         "cartoon_id": cartoon.pk,
         "prompt_id": None,
-        # -----------------------------------------------------------
-        # ✨ 프론트엔드 연결 지점
-        # - 프론트 텍스트를 여기로 전달하면 generate_prompt_task에서 우선 사용됨.
-        # - 지금은 경로만 명시:
-        #   diary_text_override = ("일기장텍스트경로")
-        # -----------------------------------------------------------
         "diary_text_override": diary_text_override,
     }
 
@@ -159,3 +150,4 @@ def run_generation_pipeline(diary_entry_id: int, diary_text_override: str | None
         generate_panels_task.s(),
         compose_grid_task.s(),
     ).apply_async()
+
