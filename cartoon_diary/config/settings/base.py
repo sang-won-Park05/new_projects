@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "storages",  # AWS S3 storage backend
     "apps.accounts",
     "apps.profiles",
     "apps.diaries",
@@ -105,6 +106,10 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 # Authentication -----------------------------------------------------------
 AUTH_USER_MODEL = "accounts.User"
+AUTHENTICATION_BACKENDS = [
+    "apps.accounts.backends.EmailBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 
 # DRF ----------------------------------------------------------------------

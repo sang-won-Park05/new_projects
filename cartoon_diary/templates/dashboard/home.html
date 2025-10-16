@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>메인 ?�?�보??/title>
+  <title>메인 대시보드</title>
   <link href="{% static 'bootstrap.min.css' %}" rel="stylesheet" />
   <link href="{% static 'style.css' %}" rel="stylesheet" />
   <style>
@@ -31,67 +31,66 @@
 <body class="app-shell">
   <header class="app-header">
     <div class="container py-3 header-wrap">
-      <h1 class="header-title h5 mb-0">?�어 만화 ?�이?�리</h1>
+      <h1 class="header-title h5 mb-0">네컷 만화 다이어리</h1>
       <div class="header-right">
-        <a class="btn btn-sm btn-outline-secondary" href="{% url 'logout' %}">로그?�웃</a>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'logout' %}">로그아웃</a>
       </div>
     </div>
   </header>
 
   <main class="container my-3">
     <div class="layout">
-      <!-- Left: ?�늘???�기 -->
+      <!-- Left: 오늘의 일기 -->
       <section class="panel panel-outline">
-        <div class="panel-title">?�늘???�기</div>
+        <div class="panel-title">오늘의 일기</div>
         <form method="post" action="/dashboard/">
           {% csrf_token %}
           <div class="mb-2 d-flex align-items-center gap-2" style="gap:14px;">
             <div class="flex-grow-1">
-              <label class="form-label mb-1">?�짜 ?�택</label>
+              <label class="form-label mb-1">날짜 선택</label>
               <input type="date" class="form-control box-outline" name="date" value="{{ today|date:'Y-m-d' }}">
             </div>
-            <div style="margin-top:26px; color:#334155">(캘린??</div>
+            <div style="margin-top:26px; color:#334155">(캘린더)</div>
           </div>
           <div class="mb-2">
             <div class="box-outline" style="height:320px; padding:12px;">
-              <textarea class="form-control" name="content" rows="10" placeholder="?�기 ?�력" style="height:100%; border:none; box-shadow:none;">{{ today_entry.content }}</textarea>
+              <textarea class="form-control" name="content" rows="10" placeholder="일기 입력" style="height:100%; border:none; box-shadow:none;">{{ today_entry.content }}</textarea>
             </div>
           </div>
           <div class="d-flex gap-2 mb-3" style="gap:12px;">
-            <button class="btn btn-outline" type="button">?�마1</button>
-            <button class="btn btn-outline" type="button">?�마2</button>
-            <button class="btn btn-outline" type="button">?�마3</button>
+            <button class="btn btn-outline" type="button">테마1</button>
+            <button class="btn btn-outline" type="button">테마2</button>
+            <button class="btn btn-outline" type="button">테마3</button>
           </div>
           <div class="text-end">
-            <button class="btn btn-outline" type="submit">?�??카툰 ?�작</button>
+            <button class="btn btn-outline" type="submit">네컷 카툰 생성</button>
           </div>
         </form>
       </section>
 
-      <!-- Center: ?�늘???�컷 미리보기 -->
+      <!-- Center: 오늘의 네컷 미리보기 -->
       <section class="panel panel-outline">
-        <div class="panel-title">?�늘???�컷 미리보기</div>
-        <div class="preview-box">?�컷</div>
+        <div class="panel-title">오늘의 네컷 미리보기</div>
+        <div class="preview-box">네컷</div>
         <div class="grid-actions mt-4">
-          <button class="btn btn-outline" type="button">?�생??/button>
-          <button class="btn btn-outline" type="button">?�집</button>
-          <button class="btn btn-outline" type="button">?�??/button>
+          <button class="btn btn-outline" type="button">재생성</button>
+          <button class="btn btn-outline" type="button">편집</button>
+          <button class="btn btn-outline" type="button">저장</button>
         </div>
       </section>
 
-      <!-- Right: ?�이?�바 -->
+      <!-- Right: 사이드바 -->
       <aside class="sidebar">
         <div class="d-flex justify-content-end"><strong>X</strong></div>
-        <div class="profile-photo">?�로???�진</div>
-        <div class="text-center">{{ request.user.username|default:"00" }}??/div>
-        <div>???�보</div>
-        <div>?�경?�정</div>
-        <div>{{ today|date:"Y??m?? }}</div>
-        <div class="box-outline p-4 text-center">캘린?�에 체크</div>
-        <div class="mt-auto text-center"><a class="btn btn-sm btn-outline-secondary" href="{% url 'logout' %}">로그?�웃</a></div>
+        <div class="profile-photo">프로필 사진</div>
+        <div class="text-center">{{ request.user.username|default:"사용자" }}님</div>
+        <div>내 정보</div>
+        <div>환경설정</div>
+        <div>{{ today|date:"Y년 m월" }}</div>
+        <div class="box-outline p-4 text-center">캘린더에 체크</div>
+        <div class="mt-auto text-center"><a class="btn btn-sm btn-outline-secondary" href="{% url 'logout' %}">로그아웃</a></div>
       </aside>
     </div>
   </main>
 </body>
 </html>
-
